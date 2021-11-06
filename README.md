@@ -1,3 +1,2 @@
 # ts-from-gql
-# ts-from-gql
-# ts-from-gql
+This project generates TS interfaces from graphql schema
