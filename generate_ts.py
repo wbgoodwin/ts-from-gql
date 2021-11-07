@@ -12,9 +12,8 @@ def fail_ts_generation(failure_message):
     exit(1)
 
 def write_to_file(output_file_path, lines_to_write):
-    with open("output_file_path", "w") as file:
+    with open(output_file_path, "w") as file:
         file.writelines(lines_to_write)
-
 
 def read_file(input_file_path):
     file_lines: list[str]
@@ -25,8 +24,7 @@ def read_file(input_file_path):
 def line_indicates_query_or_mutation(split_line: list[str]):
     return len(split_line) == 3 and (split_line[1] == "Query" or split_line[1] == "Mutation") and "{" in split_line[2]
 
-
-def remove_queries_and_mutations(lines: list[str]):
+def remove_gql_specific_data(lines: list[str]):
     updated_lines: list[str] = list()
     in_query_or_mutation = False
     for line in lines:
@@ -34,13 +32,12 @@ def remove_queries_and_mutations(lines: list[str]):
             in_query_or_mutation = False
         elif not in_query_or_mutation:
             whitespace_split_str = line.split()
-            if line_indicates_query_or_mutation(whitespace_split_str):
-                in_query_or_mutation = True
-            else:
-                updated_lines.append(line)
+            if len(whitespace_split_str) > 0:
+                if line_indicates_query_or_mutation(whitespace_split_str):
+                    in_query_or_mutation = True
+                elif "scalar" not in whitespace_split_str[0]:
+                    updated_lines.append(line)
     return updated_lines
-
-
 
 def convert_type(input_type: str):
     # would prefer to use match-case, but that is new and want this to be
@@ -55,7 +52,6 @@ def convert_type(input_type: str):
     else:
         return parsed_type
 
-
 def convert_line(line: str):
     if line.lstrip().startswith("#"):
         return
@@ -68,11 +64,10 @@ def convert_line(line: str):
     if len(colon_split_str) == 2:
         return line.replace(
                 colon_split_str[1],
-                " " + convert_type(colon_split_str[1]) + "\n"
+                " " + convert_type(colon_split_str[1]) + ";\n"
             )
 
     return line
-    
 
 def generate_ts(args: CliArguments):
     input_file_lines = read_file(args.input_file_path)
@@ -81,7 +76,7 @@ def generate_ts(args: CliArguments):
         converted_line = convert_line(line)
         if converted_line:
             output_file_lines.append(converted_line)
-    output_file_lines = remove_queries_and_mutations(output_file_lines)
+    output_file_lines = remove_gql_specific_data(output_file_lines)
     write_to_file(args.output_file_path, output_file_lines)
 
 def verify_input_file(input_file_path: str):
@@ -102,16 +97,8 @@ def parse_cli_args():
 
     return CliArguments(args.InputFile, args.OutputFile)
 
-
 if __name__ == "__main__":
     args = parse_cli_args()
     verify_input_file(args.input_file_path)
     generate_ts(args)
     print("TS file generation complete.")
-
-
-# Want to remove comment lines
-# Remove !
-# remove @deprecated?
-# only convert type -> interface if it is referencing an actual gql type, not just the word happens to be there.
-# String -> string
