@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 
 class CliArguments:
     def __init__(self, input_file_path, output_file_path):
@@ -20,6 +21,10 @@ def generate_ts():
     print("hello")
 
 def verify_input_file(input_file_path: str):
+    if not input_file_path.endswith(".gql") and not input_file_path.endswith(".graphql"):
+        fail_ts_generation("Invalid input file type. A gql file is required.")
+    if not Path(input_file_path).is_file():
+        fail_ts_generation("The input file '{}' does not exist".format(input_file_path))
 
 def parse_cli_args():
     parser = argparse.ArgumentParser()
