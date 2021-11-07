@@ -1,0 +1,39 @@
+interface Tweet {
+    id: ID
+    body: string
+    date: Date
+    Author: User
+    Stats: Stat
+}
+
+interface User {
+    id: ID
+    username: string
+    first_name: string
+    last_name: string
+    full_name: string
+    name: string
+    avatar_url: Url
+}
+
+interface Stat {
+    views: number
+    likes: number
+    retweets: number
+    responses: number
+}
+
+interface Notification {
+    id: ID
+    date: Date
+    type: string
+}
+
+interface Meta {
+    count: number
+}
+
+scalar Url
+scalar Date
+
+
